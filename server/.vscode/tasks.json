@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Local Serve",
+            "type":"shell",
+            "command": "yarn start",
+            "isBackground": true,
+            "presentation": {
+              "reveal": "always",
+              "panel": "dedicated",
+              "showReuseMessage": true,
+              "clear": true
+            }
+        },
+        {
+            "label": "Cleanup records",
+            "type":"shell",
+            "command": "yarn clean-records",
+            "isBackground": true,
+            "presentation": {
+              "reveal": "always",
+              "panel": "dedicated",
+              "showReuseMessage": true,
+              "clear": true
+            }
+        },
+        
+    ]
+}

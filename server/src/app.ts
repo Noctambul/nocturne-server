@@ -1,29 +1,45 @@
 import express from "express";
-import * as socketio from "socket.io";
-import * as path from "path";
-import e from "express";
-import SocketRecorder from "./socket-recorder";
+import cors from "cors";
+import multer from "multer";
+// import * as fs from "fs/promises";
+import fs from "fs";
 
-const cors = require("cors");
+const upload = multer({
+  limits: { fieldSize: 25 * 1024 * 1024 },
+});
 const app = express();
 
 app.use(cors());
 
-app.set("port", process.env.PORT || 3000);
+//start app
+const port = process.env.PORT || 3000;
 
-let http = require("http").Server(app);
-// set up socket.io and bind it to our http server.
-let io = require("socket.io")(http, {
-  cors: {
-    origin: "http://localhost:1234",
-    credentials: true,
-  },
+app.listen(port, () => console.log(`App is listening on port ${port}.`));
+
+app.post("/upload", upload.none(), async (req, res) => {
+  const frameId = req.body.frameId;
+  const sessionName = req.body.sessionName;
+  const frameDataUrl = req.body.frameDataUrl;
+  const directoryPath = recordDirectoryPath(sessionName);
+
+  // Check if the record directory already exists
+  if (!fs.existsSync(directoryPath)) {
+    console.log(`Create record directory path at ${directoryPath}`);
+    fs.mkdirSync(directoryPath);
+  }
+
+  try {
+    fs.writeFileSync(
+      `${directoryPath}/screenshot-${frameId}.png`,
+      Buffer.from(frameDataUrl.split(",")[1], "base64")
+    );
+  } catch (e) {
+    console.error(e);
+  }
+
+  console.log(`frameId: ${frameId} | sessionName: ${sessionName}`);
 });
 
-io.on("connection", function (socket: any) {
-  const socketObject = new SocketRecorder(socket);
-});
-
-const server = http.listen(3000, function () {
-  console.log("listening on *:3000");
-});
+function recordDirectoryPath(directoryName): string {
+  return `./records/${directoryName}`;
+}
